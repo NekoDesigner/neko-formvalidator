@@ -5,7 +5,7 @@ FormValidator is a JavaScript Module for validation form.
 
 ## Installation
 
-`npm install --save formvalidator`
+`npm install --save neko-formvalidator`
 
 ## Basic Usage
 
@@ -15,7 +15,7 @@ FormValidator is a JavaScript Module for validation form.
 /**
  * Using ES6
 */
-import FormValidator from 'formvalidator'
+import FormValidator from 'neko-formvalidator'
 
 const form = document.querySelector("#my-form");
 
