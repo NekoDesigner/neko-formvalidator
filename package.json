@@ -1,0 +1,21 @@
+{
+  "name": "formvalidator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "parcel watch example/index.html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "babel-polyfill": "^6.26.0",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "typescript": "^3.6.4"
+  }
+}

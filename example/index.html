@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="./example.css">
+    <title>FormValidator Plugin by Hayaku</title>
+</head>
+<body>
+    
+    <div class="main-container">
+        <h1>Form Validator Hayaku</h1>
+        <div class="container">
+            <form action="" method="post" id="form-test">
+                <label for="name">Name</label>
+                <input type="text" name="name" id="name">
+                <p class="message" data-id="name"></p>
+                <label for="age">Age</label>
+                <input type="number" name="age" id="age">
+                <p class="message" data-id="age"></p>
+                <label for="power">Power</label>
+                <input type="number" name="power" id="power">
+                <p class="message" data-id="power"></p>
+                <button type="submit">Tester</button>
+            </form>
+        </div>
+        <div class="code">
+            <h2>Usage</h2>
+            <code>
+                <span class="_var">import</span> <span class="_class">FormValidator</span> <span
+                    class="_var">from</span> <span class="_string">'../src/FormValidator';</span><br><br>
+    
+                <span class="_var">let</span> form: <span class="_class">HTMLFormElement</span> =
+                document.<span class="_method">querySelector</span>(<span class="_string">'#form-test'</span>) as
+                <span class="_class">HTMLFormElement</span>;<br>
+                <span class="_var">let</span> name: <span class="_class">HTMLInputElement</span> =
+                form.<span class="_method">querySelector</span>(<span class="_string">'#name'</span>) as
+                <span class="_class">HTMLInputElement</span> ;<br><br>
+    
+                <span class="_var">const</span> validator = <span class="_new">new</span> <span
+                    class="_class">FormValidator</span>(form, [<br>
+                &nbsp; {<br>
+                &nbsp; element: name,<br>
+                &nbsp; rules: <span class="_string">"required"</span>,<br>
+                &nbsp; messages: {<br>
+                &nbsp; &nbsp; required: <span class="_string">"the field :attr is required !"</span> <br>
+                &nbsp; &nbsp; }<br>
+                &nbsp; }<br>
+                ]);<br>
+                &nbsp; {<br>
+                &nbsp; element: age,<br>
+                &nbsp; rules: <span class="_string">"required_if:name"</span>,<br>
+                &nbsp; messages: {<br>
+                &nbsp; &nbsp; required_if: <span class="_string">"Required if name is present not empty !"</span> <br>
+                &nbsp; &nbsp; }<br>
+                &nbsp; }<br>
+                ]);<br><br>
+    
+                form.<span class="_method">addEventListener</span>( <span class="_string">'submit'</span> , evt =>
+                {<br><br>
+    
+                &nbsp; evt.<span class="_method">preventDefault</span>();<br><br>
+    
+                &nbsp; <span class="_var">let</span> valid = validator.<span class="_method">validate</span>();<br><br>
+    
+                &nbsp; <span class="_var">if</span> (valid && <span class="_var">typeof</span> valid == <span class="_string">'object'</span> )
+                {<br><br>
+    
+                &nbsp; &nbsp; valid.<span class="_method">forEach</span>(rule => {<br>
+                &nbsp; &nbsp; &nbsp; rule.element.style.border = <span class="_string">"solid 3px #ef5350"</span> ;<br>
+                &nbsp; &nbsp; &nbsp; <span class="_var">let</span> display: <span class="_class">HTMLElement</span> =
+                document.<span class="_method">querySelector</span>(<span class="_string">`[data-id="${rule.element.getAttribute('id')}"]`</span>) as
+                <span class="_class">HTMLElement</span> ;<br>
+                &nbsp; &nbsp; &nbsp; display.classList.<span class="_method">add</span>('active');<br>
+                &nbsp; &nbsp; &nbsp; display.innerText = validator.<span class="_method">getMessage(rule)</span>;<br>
+                &nbsp; &nbsp; });<br><br>
+    
+                &nbsp; }<br><br>
+
+                &nbsp; <span class="_var">if</span> (typeof valid == <span class="_string">'boolean'</span> <span class="_new">&&</span> valid) {
+                &nbsp; &nbsp; <span class="_method">alert</span>( <span class="_string">'Submit !'</span>);
+                &nbsp; }
+    
+                });<br>
+            </code>
+        </div>
+    </div>
+
+
+    <script src="./Example.ts"></script>
+</body>
+</html>
