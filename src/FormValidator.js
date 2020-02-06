@@ -142,6 +142,12 @@ var FormValidator = /** @class */ (function () {
                 });
             }
         });
+        var result = {
+            isValid: valid,
+            messages: messages,
+            getMessage: this.getMessage
+        };
+        console.log(result);
         return messages.length ? messages : valid;
     };
     /**

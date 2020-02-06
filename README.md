@@ -32,7 +32,7 @@ let validator = new FormValidator(form, [
 
 form.addEventListener('submit', evt => {
     evt.preventDefault();
-    let valid = validator.validate();
+    let result = validator.validate();
 });
 
 ```
@@ -61,15 +61,16 @@ You can chain rules with `|`.
 
 ## Methods
 
-**validate** _@return boolean | array<obj>_
+**validate** _@return FormResult object_  
 Check if rules are respected. If errors and you specified errors messages, it return an array of object with this structure :
-```json
-{
-    "element",
-    "message"
+```ts
+interface FormResult {
+    isValid: boolean,
+    messages: Array<FormError>
+    getMessage: Function
 }
 ```
-If any you specified any rules messages, it returning true or false.
+If you specified any rules messages, it returning true or false.
 
 **add** _@return void_
 argument: _FormElement_
@@ -81,4 +82,11 @@ Specify the input element that must be deleted from validator
 
 **getMessage** _@return string_
 Return the string message that you specify. If you use `:attr` in your string message,
-that change to the input name.
+that change to the input name. Just pass the ForError Element as parameter
+
+```ts
+let result = validator.validate()
+if(!result.isValid) {
+    result.messages.forEach(message => console.log(result.getMessage(message)))
+}
+```

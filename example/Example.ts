@@ -36,27 +36,24 @@ form.addEventListener('submit', evt => {
     evt.preventDefault();
     reset();
 
-    let valid = validator.validate();
+    let result = validator.validate();
 
-    if (valid && typeof valid == 'object') {
-
+    if (!result.isValid) {
+        let valid = result.messages;
         valid.forEach(rule => {
             rule.element.style.border = "solid 3px #ef5350";
             let container: HTMLElement = document.querySelector(`[data-id="${rule.element.getAttribute('id')}"]`) as HTMLElement;
             container.classList.add('active');
 
             let display = document.createElement('span');
-            display.innerHTML = validator.getMessage(rule) + '<br>';
+            display.innerHTML = result.getMessage(rule) + '<br>';
 
             container.appendChild(display);
         });
-
-    }
-
-    if (typeof valid == 'boolean' && valid) {
+    } else {
         alert('Submit !');
     }
-
+    
 });
 
 function reset() {

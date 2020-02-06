@@ -14,6 +14,12 @@ interface FormError {
     element: HTMLInputElement | HTMLSelectElement
 }
 
+interface FormResult {
+    isValid: boolean,
+    messages: Array<FormError>
+    getMessage: Function
+}
+
 /**
  * Class inpire by Laravel Frameword Request Validation rules
  * Use it for validate your forms elements
@@ -57,7 +63,7 @@ export default class FormValidator {
         // this.Log(this.elements);
     }
 
-    validate(): boolean | Array<FormError> {
+    validate(): FormResult {
 
         let messages: Array<FormError> = [];
         let valid: boolean = true;
@@ -166,7 +172,14 @@ export default class FormValidator {
             }
         });
 
-        return messages.length ? messages : valid;
+        let result: FormResult = {
+            isValid: !messages.length,
+            messages: messages,
+            getMessage: this.getMessage
+        }
+
+        return result;
+        // return messages.length ? messages : valid;
     }
 
     /**
