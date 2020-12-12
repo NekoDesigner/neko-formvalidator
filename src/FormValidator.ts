@@ -1,371 +1,140 @@
-/**
- * options paramters must match with FormElement interface
- *
- * @interface FormElement
- */
-interface FormElement {
-    element: HTMLInputElement | HTMLSelectElement,
-    rules: string
-    messages?: any
-}
+export default class Validator {
 
-interface FormError {
-    message: string,
-    element: HTMLInputElement | HTMLSelectElement
-}
-
-interface FormResult {
-    isValid: boolean,
-    messages: Array<FormError>
-    getMessage: Function
-}
-
-/**
- * Class inpire by Laravel Frameword Request Validation rules
- * Use it for validate your forms elements
- * @example
- * new FormValidator(myForm, [{ element: myInput, rules: 'required|min:5', messages: { required: "Need not empty !", min: "Must greater or equal than 5 !" } }])
- *
- * @export
- * @class FormValidator
- */
-export default class FormValidator {
-
-    TAG: string = '[FORM VALIDATOR] => ';
+    static modules: { [ruleName: string]: any } = {};
     form: HTMLFormElement;
-    elements: Array<FormElement>;
+    errors: { [ruleName: string]: any } = {};
+    state: { [ruleName: string]: any } = {
+        success: true,
+        errors: null
+    }
 
-    validRules: Array<string> = ['required', 'email', 'number', 'max', 'min', 'required_if'];
-    rulesSchema: any;
-
-    constructor(form: HTMLFormElement, elements: Array<FormElement>) {
+    constructor(form: HTMLFormElement) {
         this.form = form;
-        this.elements = elements;
-        this.validationRules();
     }
 
-    add(element: FormElement) {
-        this.elements.push(element);
-        // this.Log(this.elements);
-    }
-
-    remove(element: HTMLInputElement | HTMLSelectElement) {
-        let id = null;
-        this.elements.forEach((el, index) => {
-            if (el.element == element) {
-                id = index;
-            }
-        });
-
-        if (id === null) throw this.Error(`Element doesn't exist.`);
-
-        this.elements.splice(id, 1);
-        // this.Log(this.elements);
-    }
-
-    validate(): FormResult {
-
-        let messages: Array<FormError> = [];
-        let valid: boolean = true;
-        
-        this.elements.forEach(el => {
-            
-            let { element, rules } = el;
-            
-            // Get all rules
-            let rules_arr = rules.split('|');
-
-            // Vérifier si il y a un required_if
-            const regex = /required_if/gi;
-            if (/^required_if/.test(rules)) {
-                let required_if_ok = false;
-                // check if required_if is OK
-                rules_arr.forEach(rule => {
-                    if (/^required_if/.test(rule)) {
-                        if (this.applySpecialRule("required_if", element, rule)) {
-                            required_if_ok = false;
-                            if (el.messages && el.messages[this.getSpecialRule(rule)]) {
-                                let obj: FormError = {
-                                    message: el.messages[this.getSpecialRule(rule)].toString(),
-                                    element
-                                }
-                                messages.push(obj)
-                            } else {
-                                valid = false;
-                            }
-                        } else {
-                            required_if_ok = true;
-                        }
-                    }
-                });
-                // if required_if is ok, we can check if other rules are respected
-                if (required_if_ok) {
-                    rules_arr.forEach(rule => {
-                        if (!this.checkRule(rule)) throw `La règle ${rule} n'existe pas.`;
-                        if (!/^required_if/.test(rule)) {
-                            if (!this.isSpecialRule(rule)) {
-                                if (!this.rulesSchema[rule](element)) {
-                                    if (el.messages && el.messages[rule]) {
-                                        let obj: FormError = {
-                                            message: el.messages[rule].toString(),
-                                            element
-                                        }
-                                        messages.push(obj);
-                                    } else {
-                                        valid = false;
-                                    }
-                                }
-                            } else {
-                                const rule_name = this.getSpecialRule(rule);
-                                if (this.applySpecialRule(rule_name, element, rule)) {
-                                    if (el.messages && el.messages[this.getSpecialRule(rule)]) {
-                                        let obj: FormError = {
-                                            message: el.messages[this.getSpecialRule(rule)].toString(),
-                                            element
-                                        }
-                                        messages.push(obj)
-                                    } else {
-                                        valid = false;
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-
-            }
-            else
-            {
-                rules_arr.forEach(rule => {
-
-                    if (!this.checkRule(rule)) throw `La règle ${rule} n'existe pas.`;
-                    // if (!this.validRules.includes(rule)) throw `La règle ${rule} n'existe pas.`;
-    
-                    if (!this.isSpecialRule(rule)) {
-                        if (!this.rulesSchema[rule](element)) {
-                            if (el.messages && el.messages[rule]) {
-                                let obj: FormError = {
-                                    message: el.messages[rule].toString(),
-                                    element
-                                }
-                                messages.push(obj);
-                            } else {
-                                valid = false;
-                            }
-                        }
-                    } else {
-                        const rule_name = this.getSpecialRule(rule);
-                        if (this.applySpecialRule(rule_name, element, rule)) {
-                            if (el.messages && el.messages[this.getSpecialRule(rule)]) {
-                                let obj: FormError = {
-                                    message: el.messages[this.getSpecialRule(rule)].toString(),
-                                    element
-                                }
-                                messages.push(obj)
-                            } else {
-                                valid = false;
-                            }
-                        }
-                    }
-    
-                });    
-            }
-        });
-
-        let result: FormResult = {
-            isValid: !messages.length,
-            messages: messages,
-            getMessage: this.getMessage
-        }
-
-        return result;
-        // return messages.length ? messages : valid;
-    }
-
-    /**
-     * Rules with parameters
-     *
-     * @param {*} rule_name
-     * @param {*} element
-     * @param {*} rule
-     * @returns {boolean}
-     * @memberof FormValidator
-     */
-    applySpecialRule(rule_name: string, element: HTMLInputElement | HTMLSelectElement, rule: string): boolean {
-
-        let valid = false;
-
-        switch (rule_name) {
-            case 'required_if':
-                let elements: string[] = rule.split(':');
-                let other: HTMLInputElement = document.querySelector(`[name="${elements[1]}"]`) as HTMLInputElement;
-                valid = this.rulesSchema['required_if'](element, other);
-                break;
-            case 'min':
-                let values: string[] = rule.split(':');
-                let min: number = parseInt(values[1]);
-                valid = this.rulesSchema['min'](element, min);
-                break;
-            case 'max':
-                values = rule.split(':');
-                let max: number = parseInt(values[1]);
-                valid = this.rulesSchema['max'](element, max);
-                break;
-        }
-
-        return valid;
-
-    }
-
-    /**
-     * Check validation rules
-     *
-     * @memberof FormValidator
-     */
-    validationRules() {
-
-        this.rulesSchema = {
-            required: (element: HTMLInputElement | HTMLSelectElement) => {
-                let value = element.value;
-                return value.length;
-            },
-            email: (element: HTMLInputElement | HTMLSelectElement) => {
-                let value = element.value;
-                const regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-                return regex.test(value);
-            },
-            number: (element: HTMLInputElement | HTMLSelectElement) => {
-                let value = element.value;
-                return parseInt(value) != NaN ? true : false;
-            },
-            required_if: (element: HTMLInputElement | HTMLSelectElement, other: HTMLInputElement | HTMLSelectElement) => {
-                if (element.value == '' && other.value != '') {
-                    return true;
-                }
-                return false;
-            },
-            min: (element: HTMLInputElement | HTMLSelectElement, minimum: number) => {
-                let value: any = element.value;
-                if (isNaN(value)) {
-                    return value.length >= minimum ? false : true;
-                }
-                return parseFloat(value) >= minimum ? false : true;
-            },
-            max: (element: HTMLInputElement | HTMLSelectElement, maximum: number) => {
-                let value: any = element.value;
-                if (isNaN(value)) {
-                    return value.length <= maximum ? false : true;
-                }
-                return parseFloat(value) <= maximum ? false : true;
-            },
-        }
-
-    }
-
-    /**
-     * Check if rule exist
-     *
-     * @param {*} value
-     * @returns {boolean}
-     * @memberof FormValidator
-     */
-    checkRule(value: string): boolean {
-        let valid = false;
-
-        this.validRules.forEach(rule => {
-            let val = `^${rule}`;
-            let regex = new RegExp(val, "i");
-            if (regex.test(value)) {
-                valid = true;
-            }
-        });
-
-        return valid;
-    }
-
-    /**
-     * Return name of special rules
-     *
-     * @param {*} value
-     * @returns {string}
-     * @memberof FormValidator
-     */
-    getSpecialRule(value: string): string {
-        let name = '';
-        let specialRules: string[] = ['required_if', 'min', 'max'];
-        specialRules.forEach(rule => {
-            let val = `^${rule}`;
-            let regex = new RegExp(val, "i");
-            if (regex.test(value)) {
-                name = rule;
-            }
-        });
-        return name;
-    }
-
-    /**
-     * Check if is special rules (with parameters)
-     *
-     * @param {*} value
-     * @returns {boolean}
-     * @memberof FormValidator
-     */
-    isSpecialRule(value: string): boolean {
-
-        let valid = false;
-
-        let specialRules: string[] = ['required_if', 'min', 'max'];
-        specialRules.forEach(rule => {
-            let val = `^${rule}`;
-            let regex = new RegExp(val, "i");
-            if (regex.test(value)) {
-                valid = true;
-            }
-        });
-
-        return valid;
-    }
-
-    getMessage(el: FormError): string {
-        let regex = /:attr/ig;
-        let name = el.element.getAttribute('name');
-        if (name) {
-            let message: string = el.message.replace(regex, name);
-            return message;
+    static use(rule: any) {
+        if (Array.isArray(rule)) {
+            rule.forEach(rullable => {
+                let name: string = new rullable().name.toString();
+                Validator.modules[name] = rullable
+            })
         } else {
-            this.Warn(`L'attibut name est manquant sur une de vos form elements`);
-            return el.message;
+            let name: string = new rule().name.toString();
+            Validator.modules[name] = rule
         }
     }
 
-    /**
-     * Log message with Tag
-     *
-     * @param {*} message
-     * @memberof FormValidator
-     */
-    Log(message: any) {
-        console.log(this.TAG, message);
+    validate(rules: { [ruleName: string]: any }) {
+
+        this._resetState()
+
+        for (let key in rules) {
+            let rule_list: string = rules[key]
+            let callable_rule = rule_list.split('|')
+            if (this._hasNullableRule(callable_rule)) {
+                for (let i = 0; i < callable_rule.length; i++) {
+                    let input: HTMLInputElement = this.form.querySelector(`[name="${key}"]`) as HTMLInputElement
+                    if (input.value) {
+                        this._call(key, callable_rule[i])
+                    }
+                }
+            } else {
+                for (let i = 0; i < callable_rule.length; i++) {
+                    this._call(key, callable_rule[i])
+                }
+            }
+        }
+
+        this._updateState()
+
+        return this.state
+
     }
 
-    /**
-     * Log error message with Tag
-     *
-     * @param {*} message
-     * @memberof FormValidator
-     */
-    Error(message: any) {
-        console.error(this.TAG, message);
+    _call(input: string, rule: string) {
+
+        let guard;
+
+        if (this._hasParameters(rule)) {
+            let rule_with_params = rule.split(':');
+            let rule_name = rule_with_params[0];
+            let params = rule_with_params[1];
+            if (Validator.modules[rule_name]) {
+                guard = new Validator.modules[rule_name]();
+                guard._prepare(this.form, input);
+                guard.applyRule(params);
+            } else {
+                throw new Error(`${rule_name} doesn't exist. Please check if you have correctly import the rule or if you correctly call it by name.`)
+            }
+        } else if (Validator.modules[rule]) {
+            guard = new Validator.modules[rule]();
+            guard._prepare(this.form, input);
+            guard.applyRule();
+        } else {
+            throw new Error(`${rule} doesn't exist. Please check if you have correctly import the rule or if you correctly call it by name.`)
+        }
+
+        this._checkError(guard, input)
+
     }
 
-    /**
-     * Log warning message with Tag
-     *
-     * @param {*} message
-     * @memberof FormValidator
-     */
-    Warn(message: any) {
-        console.warn(this.TAG, message);
+    _checkError(guard: any, input: string) {
+        if (guard.hasError) {
+            if (this.errors[input]) {
+                this.errors[input]['messages'].push(guard.errorMessage)
+            } else {
+                this.errors[input] = {
+                    el: guard.input,
+                    messages: [guard.errorMessage]
+                }
+            }
+        }
     }
 
+    _hasParameters(rule: string) {
+        return /:/g.test(rule)
+    }
+
+    _hasNullableRule(rules: Array<string>) {
+        return rules.find(rule => rule === 'nullable')
+    }
+
+    _resetState() {
+        this.errors = {}
+        this.state.errors = null
+        this.state.success = true;
+    }
+
+    _updateState() {
+        if (Object.entries(this.errors).length === 0) {
+            this.state.errors = null;
+            this.state.success = true;
+        } else {
+            this.state.errors = this.errors;
+            this.state.success = false;
+        }
+    }
+
+}
+
+import Required from './Rules/Required';
+import RequiredIf from './Rules/RequiredIf';
+import RequiredWith from './Rules/RequiredWith';
+import Min from './Rules/Min';
+import Max from './Rules/Max';
+import Numeric from './Rules/Numeric';
+import Email from './Rules/Email';
+import Pattern from './Rules/Pattern';
+import Rule from './Rules/Rule';
+
+export {
+    Required,
+    RequiredIf,
+    RequiredWith,
+    Min,
+    Max,
+    Numeric,
+    Email,
+    Pattern,
+    Rule
 }
