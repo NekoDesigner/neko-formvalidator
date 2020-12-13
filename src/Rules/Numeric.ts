@@ -10,23 +10,52 @@ import Rule from "./Rule";
  */
 export default class Numeric extends Rule {
 
-    static Description = `L'élément doit être un nombre.`
+    /**
+     *
+     *
+     * @static
+     * @memberof Numeric
+     */
+    static Description = `L'élément doit être un nombre.`;
 
-    static ErrorMessage = `Le champs :attr: doit être de type numeric.`
+    /**
+     *
+     *
+     * @static
+     * @memberof Numeric
+     */
+    static ErrorMessage = `Le champs :attr: doit être de type numeric.`;
 
+    /**
+     * Creates an instance of Numeric.
+     * @memberof Numeric
+     */
     constructor() {
-        super('numeric')
+        super('numeric');
     }
 
+    /**
+     *
+     *
+     * @return {boolean|null} 
+     * @memberof Numeric
+     */
     applyRule() {
         if (!this.isNumeric(this.input!.value)) {
-            this.setErrorMessage(Numeric.ErrorMessage)
-            return this.error()
+            this.setErrorMessage(Numeric.ErrorMessage);
+            return this.error();
         } else {
-            this.input!.setAttribute('data-input-type', 'number')
+            this.input!.setAttribute('data-input-type', 'number');
         }
     }
 
+    /**
+     *
+     *
+     * @param {string} value
+     * @return {boolean} 
+     * @memberof Numeric
+     */
     isNumeric(value: string) {
         return /^\d+$/.test(value);
     }

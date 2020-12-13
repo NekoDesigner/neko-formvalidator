@@ -1,7 +1,7 @@
 {
   "name": "neko-formvalidator",
   "version": "3.0.0",
-  "description": "",
+  "description": "Create and customize form validation rules",
   "main": "index.js",
   "scripts": {
     "build": "tsc",

@@ -1,17 +1,73 @@
+
+/**
+ * Main validation class
+ * 
+ * @author NekoDev <tahar.chibane@nekodev.fr>
+ * @example let validator = new Validator(document.querySelector('form')); validator.validate({ password: 'required|min:8' })
+ * @export
+ * @class Validator
+ */
 export default class Validator {
 
+
+    /**
+     *
+     *
+     * @static
+     * @type {{ [ruleName: string]: any }}
+     * @memberof Validator
+     */
     static modules: { [ruleName: string]: any } = {};
+
+
+    /**
+     *
+     *
+     * @type {HTMLFormElement}
+     * @memberof Validator
+     */
     form: HTMLFormElement;
+
+
+    /**
+     * List of errors
+     *
+     * @type {{ [ruleName: string]: any }}
+     * @memberof Validator
+     */
     errors: { [ruleName: string]: any } = {};
+
+
+    /**
+     * Form state (valid and errors)
+     *
+     * @type {{ [ruleName: string]: any }}
+     * @memberof Validator
+     */
     state: { [ruleName: string]: any } = {
         success: true,
         errors: null
     }
 
+
+    /**
+     * Creates an instance of Validator.
+     * 
+     * @param {HTMLFormElement} form
+     * @memberof Validator
+     */
     constructor(form: HTMLFormElement) {
         this.form = form;
     }
 
+
+    /**
+     * Use Validation rule
+     *
+     * @static
+     * @param {Rule} rule
+     * @memberof Validator
+     */
     static use(rule: any) {
         if (Array.isArray(rule)) {
             rule.forEach(rullable => {
@@ -24,6 +80,16 @@ export default class Validator {
         }
     }
 
+
+    /**
+     * Apply validation rules.
+     * key => name attribute
+     * value => rules separate by pipes ( | )
+     *
+     * @param {{ [ruleName: string]: any }} rules
+     * @return {*} 
+     * @memberof Validator
+     */
     validate(rules: { [ruleName: string]: any }) {
 
         this._resetState()
@@ -51,6 +117,14 @@ export default class Validator {
 
     }
 
+
+    /**
+     * Call the applyRule method with or without params
+     *
+     * @param {string} input
+     * @param {string} rule
+     * @memberof Validator
+     */
     _call(input: string, rule: string) {
 
         let guard;
@@ -78,6 +152,14 @@ export default class Validator {
 
     }
 
+
+    /**
+     * Add error to the errors list
+     *
+     * @param {*} guard
+     * @param {string} input
+     * @memberof Validator
+     */
     _checkError(guard: any, input: string) {
         if (guard.hasError) {
             if (this.errors[input]) {
@@ -91,20 +173,48 @@ export default class Validator {
         }
     }
 
+
+    /**
+     * Check if rule has parameter
+     *
+     * @param {string} rule
+     * @return {*} 
+     * @memberof Validator
+     */
     _hasParameters(rule: string) {
         return /:/g.test(rule)
     }
 
+
+    /**
+     * Check if the field with rules can be nullable
+     *
+     * @param {Array<string>} rules
+     * @return {*} 
+     * @memberof Validator
+     */
     _hasNullableRule(rules: Array<string>) {
         return rules.find(rule => rule === 'nullable')
     }
 
+
+    /**
+     * Reset form state
+     *
+     * @memberof Validator
+     */
     _resetState() {
         this.errors = {}
         this.state.errors = null
         this.state.success = true;
     }
 
+
+    /**
+     * Update form state after apply all validation rules
+     *
+     * @memberof Validator
+     */
     _updateState() {
         if (Object.entries(this.errors).length === 0) {
             this.state.errors = null;
